@@ -38,16 +38,20 @@
 ;; that the procedures run in time proportional to the number of
 ;; steps required by the computer (how big n is).
 
-(define (search-for-primes range)
-  (find-primes range 0))
+(define (search-for-primes start end)
+  (if (even? start)
+      (find-primes (inc start) end)
+      (find-primes start end)))
 
-(define (find-primes range count)
-  (cond ((= count 3) 
+(define (find-primes start end)
+  (cond ((not (> start end)) 
+              (cond ((even? start) 
+                     (timed-prime-test (+ start 1)) 
+                     (find-primes (+ start 1) end))
+                    (else
+                     (timed-prime-test (+ start 2)) 
+                     (find-primes (+ start 2) end))))
+        (else
          (newline)
-         (display "Finished!"))
-    ((prime? range) ;; yes, not the most efficient.
-     (timed-prime-test range)
-     (find-primes (inc range) (inc count)))
-  (else
-   (find-primes (inc range) count))))
+         (display "Prime tests finished."))))
         
