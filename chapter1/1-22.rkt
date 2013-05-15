@@ -1,17 +1,17 @@
 #lang planet neil/sicp
 
 (define (timed-prime-test n)
-  (newline)
-  (display n)
   (start-prime-test n (runtime)))
 
 (define (start-prime-test n start-time)
   (if (prime? n)
-      (report-prime (- (runtime) start-time))))
+      (report-prime (- (runtime) start-time) n)))
 
-(define (report-prime elapsed-time) 
-         (display " *** ")
-         (display elapsed-time))
+(define (report-prime elapsed-time n)
+  (newline)
+  (display n)
+  (display " *** ")
+  (display elapsed-time))
 ;--------------------------------------------------------------
 (define (prime? n)
   (= n (smallest-divisor n)))
