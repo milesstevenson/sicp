@@ -1,5 +1,21 @@
 #lang planet neil/sicp
 
+;1000000009 *** 11000
+;1000000021 *** 9000
+;1000000033 *** 9000
+;1000000087 *** 8000
+;Prime tests finished.
+;
+;10000000033 *** 25000
+;10000000061 *** 25000
+;10000000069 *** 25000
+;Prime tests finished.
+;
+;100000000019 *** 86000
+;100000000057 *** 80000
+;100000000063 *** 80000
+;Prime tests finished.
+
 (define (timed-prime-test n)
   (start-prime-test n (runtime)))
 
