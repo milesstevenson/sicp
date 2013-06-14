@@ -24,5 +24,5 @@
   (define (identity k) k)
   (it-accumulate * 1 identity 1 inc n))
 ;------------------------------------------------------------------------------
-; necessary stuff
+; necessary stuff for the example
 (define (inc n) (+ n 1))
