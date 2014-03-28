@@ -1,4 +1,4 @@
-#lang planet neil/sicp
+
 
 (define (smallest-divisor n)
   (find-divisor n 2))
