@@ -1,4 +1,4 @@
-#lang planet neil/sicp
+
 
 ;SICP exercise 1-17
 ; Re-implement O(logn) iterative solution to a*b problem
