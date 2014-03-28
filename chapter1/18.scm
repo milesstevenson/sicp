@@ -1,4 +1,4 @@
-#lang planet neil/sicp
+
 ;SICP exercise 1-18
 ; Re-implement O(logn) iterative solution to a*b problem
 ; using double and half as primitives.
