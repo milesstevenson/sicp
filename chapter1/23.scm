@@ -1,4 +1,4 @@
-#lang planet neil/sicp
+
 ; This procedure seems to reduce each benchmark
 ; in half, since half of the numbers previously
 ; tested in 1-22 are no longer being tested here.
