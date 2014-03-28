@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 ; We use part of Euler's infinite product proof for this.
 ; http://en.wikipedia.org/wiki/Wallis_product
  (define (pi-approx n)
