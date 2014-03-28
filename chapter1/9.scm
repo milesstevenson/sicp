@@ -1,4 +1,4 @@
-#lang planet neil/sicp 
+
 
 ;; Procedure 1 
 (define (+ a b)
