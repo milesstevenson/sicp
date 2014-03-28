@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 
 ; Provided code from SICP
 (define (fermat-test n)
