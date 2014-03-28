@@ -1,8 +1,6 @@
-#lang planet neil/sicp
-
 #|
 Exercise 1.4
-Observe that our model fo evaluation allows for combinations whose
+Observe that our model for evaluation allows for combinations whose
 operators are compound expressions. Use this observation to
 describe the behavior of the following procedure:
 |#
