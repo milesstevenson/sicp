@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 ; Initially I thought Alyssa's idea and implementation was ideal. The fast-exp
 ; algorithm runs in O(log n) time, afterall, with minimal deffered operations.
 
