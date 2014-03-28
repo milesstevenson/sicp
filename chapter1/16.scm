@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 
 ;SICP exercise 1-16
 ; O(logn) iterative solution to b^n problem.
