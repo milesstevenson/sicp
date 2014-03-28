@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 
 (define (timed-prime-test n)
   (start-prime-test n (runtime)))
