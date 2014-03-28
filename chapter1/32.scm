@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 ;Here we must show that sum and product are both special cases of a more
 ;general notion called accumulate that combines a collection of terms, using
 ;some general accumulation function.
