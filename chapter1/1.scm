@@ -1,5 +1,3 @@
-#lang planet neil/sicp
-
 #|
 Exercise 1.1
 |#
