@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 ;Supposedly we can generalize even more than accumulate through introducing
 ;the notion of a filter on the terms to be combined.
 ;
