@@ -1,4 +1,4 @@
-#lang planet neil/sicp 
+
 
 (define (cubert x)
   (cubert-iter 1.0 x))
