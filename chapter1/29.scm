@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 ;We're implementing  Simpson's Rule for computing integrals here.
 ;(h/3) * [y_0 + 4y_1 + 2y_2 + ... + 4y_(n-1) + y_n]
 ;h = (b - a)/n
