@@ -1,4 +1,3 @@
-#lang planet neil/sicp
 ;> (carmic-test 561)
 ;#t
 ;> (carmic-test 1105)
