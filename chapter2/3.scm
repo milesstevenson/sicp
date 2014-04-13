@@ -1,4 +1,4 @@
-(load "2.scm")
+
 
 ;;;  I spent an unecessary amount of time focusing on
 ;;; how this data structure could be implemented,
@@ -58,7 +58,7 @@
 ;;; Constructor to create a rectangle method1
 (define (make-rect-2 p l w)
   ;; Assume these segments are perpendicular
-  (cons p (cons l w))  
+  (cons p (cons l w)))  
 (define (length-2 rect)
   (cdr (car rect)))
 (define (width-2 rect)
@@ -69,3 +69,46 @@
   (* 2 (+ (length-1 rect) (width-1 rect))))
 (define (area rect)
   (* (length-1 rect) (width-1 rect)))
+
+;;; =============================================================
+;;; Exercise 2 procedures
+(define (average a b)
+  (/ (+ a b) 2))
+
+;;; A line is represented by a pair of points
+(define (make-segment point-a point-b)
+  (cons point-a point-b))
+(define (start-segment line)
+  (car line))
+(define (end-segment line)
+  (cdr line))
+
+;;; A point is represented by a pair of numbers
+(define (make-point x y)
+  (cons x y))
+(define (x-point point)
+  (car point))
+(define (y-point point)
+  (cdr point))
+
+
+;;; Return the midpoint of a line
+(define (midpoint-segment line)
+  ;; Use the line and point selectors we've
+  ;; defined above to make a midpoint.
+  (make-point (average
+	       (x-point (start-segment line))
+	       (x-point (end-segment line)))
+	      (average
+	       (y-point (start-segment line))
+	       (y-point (end-segment line)))))
+  
+;;; Simple display procedure
+(define (print-point p)
+  (newline)			     
+  (display "(")
+  (display (x-point p))
+  (display ",")
+  (display (y-point p))
+  (display ")"))
+  
