@@ -14,8 +14,6 @@
  (lambda (f) (lambda (x) x))) ;n is the only place we can subsitute zero
 
 (lambda (f) (lambda (x) (f ((lambda (f) (lambda (x) x)) f) x)))
-;;; After this point I'm completely stuck as to what comes next
-
 
 ;; f is applied to (lambda (f) (lambda (x) x)) 
 (lambda (f) (lambda (x) (f (((lambda (x) x) x)))))
