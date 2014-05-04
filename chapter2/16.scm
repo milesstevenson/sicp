@@ -5,5 +5,5 @@
 ;;; An interval-arithmetic package that does this shortcoming cannot be
 ;;; created. According to wikipedia, the general rule is that the more
 ;;; any same interval is used in a function, the more uncertainty can be
-;;; expected from the value. I assume this is general rule can be applied
+;;; expected from the value. I assume this general rule can be applied
 ;;; to objects similar, in algebraic consistency, to intervals as well.

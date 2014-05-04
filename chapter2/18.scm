@@ -1,0 +1,7 @@
+(define (reverse items)
+  (define (reverse-iter mark)
+    (if (equal? mark -1)
+        '()
+        (cons (list-ref items mark)
+              (reverse-iter (- mark 1)))))
+  (reverse-iter (- (length items) 1)))

@@ -13,4 +13,4 @@
 (define test-interval (div-interval A A)) ;(.9047619047619049 . 1.1052631578947367)
 
 ;;; So par2 is indeed the better program for giving answers with less error, as these
-;;; implications aren't needed as much.
+;;; implications aren't needed as much as in p1.
