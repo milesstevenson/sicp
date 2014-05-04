@@ -1,0 +1,10 @@
+(define (same-parity a . b)
+  (define (sp test items)
+    (cond ((null? items) '())
+          ((test (car items)) (cons (car items)
+                                    (sp test (cdr items))))
+          (else
+           (sp test (cdr items)))))
+    (if (even? a)
+      (cons a (sp even? b))
+      (cons a (sp odd? b))))
