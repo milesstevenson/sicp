@@ -19,7 +19,12 @@
 
  (define-test (part-b-tests)
    (check (equal? 35 (total-weight a)))
-   (check (equal? 10 (total-weight (make-mobile (make-branch 2 -15) (make-branch 2 25)))))))
+   (check (equal? 10 (total-weight (make-mobile (make-branch 2 -15) (make-branch 2 25))))))
+
+ (define-test (part-c-tests)
+   (check (equal? #f (balanced? a)))
+   (check (equal? #t (balanced? b)))
+   (check (equal? #t (balanced? c)))))
 
 (run-registered-tests)
 (run-test '(sicp-2.29-tests))
