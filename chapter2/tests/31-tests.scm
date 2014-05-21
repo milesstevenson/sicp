@@ -10,7 +10,7 @@
        tree))
 
 (in-test-group
- sicp-2.31-tests
+ sicp-2.31-tests 
 
  (define-test (square-tree-tests)
    (check (equal? (square-tree '(1 2 3 (4 5))) (square-tree2 '(1 2 3 (4 5)))))
