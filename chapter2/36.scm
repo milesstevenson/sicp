@@ -1,4 +1,4 @@
-(define a '((1 2 3) (4 5 6) (7 8 9)))
+(define a '((1 2 3) (4 5 6) (7 8 9) (10 11 12)))
 
 (define (accumulate op initial sequence)
   (if (null? sequence)
@@ -11,4 +11,4 @@
   (if (null? (car seqs))
       '()
       (cons (accumulate op init (map car seqs)) ; holy balls
-            (accumulate op init (map cdr seqs))))) ; holy balls
+            (accumulate-n op init (map cdr seqs))))) ; holy balls
