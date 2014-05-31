@@ -1,8 +1,8 @@
 # sicp #
 
-My stab at the SICP exercises. Previously I used DrRacket, but I've found it best to just use the language that was meant for the book.
-
+My stab at the SICP exercises. It seems Racket and mit-scheme are necessary in this book.
 ### Requirements ###
+[Racket](http://racket-lang.org/)
 [MIT-Scheme](http://www.gnu.org/software/mit-scheme//)
 
 ### Testing ###
