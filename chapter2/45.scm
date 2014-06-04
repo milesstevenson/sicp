@@ -6,4 +6,3 @@
         painter
         (let ((smaller ((split outer inner) painter (- n 1))))
           (outer painter (inner smaller smaller))))))
-      
