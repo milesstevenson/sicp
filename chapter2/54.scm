@@ -1,0 +1,11 @@
+(define (myequal? a b)
+  (cond ((and (null? a) (null? b)) #t)
+        ((and (not (pair? a)) (not (pair? b)))
+         (eq? a b))
+        ((or (and (pair? a) (not (pair? b)))
+             (and (not (pair? a)) (pair? b)))
+         #f)
+        ((eq? (car a) (car b)) (equal? (cdr a)
+                                       (cdr b)))
+        (else
+         #f)))
