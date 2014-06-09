@@ -4,7 +4,7 @@
 
 (define sicp-2.60-tests
   (test-suite
-   "Tests for SICP exercise 2.560"
+   "Tests for SICP exercise 2.60"
    (check-equal? '(2 1 2 3) (union-set '(1 2) '(2 3)))
    (check-equal? '(a b c) (intersection-set '(a b c d) '(a b c)))
    (check-equal? true (element-of-set? 3 '(3 4)))
