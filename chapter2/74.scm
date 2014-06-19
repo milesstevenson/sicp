@@ -1,4 +1,5 @@
 #lang racket
+(provide get-record get-salary find-employee-record joined-divisions)
 ;;; http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-17.html#%_thm_2.74
 
 ;;; misc =======================================================================
@@ -32,6 +33,7 @@
         (cons '("eva" (salary 800.50))
               (cons '("alyssa" (salary 650)) '()))))
 
+(define joined-divisions (list 'foo 'bar))
 ;;; Foo Package ================================================================
 (define (install-foo-package)
   (define (get-record employee)
@@ -75,6 +77,29 @@
 ;;; This could have been written in a number of ways, and my way probably isn't
 ;;; ideal, I'm sure.
 (define (get-salary division employee) ((get 'get-salary division) employee))
+
+
+;;; c.
+(define (find-employee-record employee divisions)
+  (cond ((null? divisions) '())
+        ((eq? (car divisions) (car (get-record (car divisions) employee)))
+         (get-record (car divisions) employee))
+        (else
+         (find-employee-record employee (cdr divisions)))))
+      
+;;; d.
+;;; I can't say for certain that I know what I'm talking about, but I'll try.
+;;;
+;;; With this rinkydink implementation, here are the following changes that need
+;;; to be made in order to incorperate a new company into the system:
+;;;
+;;; The division must provide an (install-*-package) package for the system that
+;;; contains interface procedures for any branch outside of the company to use
+;;; to access this new company's employee information. The new company needs to
+;;; tag their data as we've done here to enable generic operations. Finally, the
+;;; branch name needs to be added into the list joined-divisions for find-employee-record.
+
+
 
 ;;; install packages ===========================================================
 (install-foo-package)
