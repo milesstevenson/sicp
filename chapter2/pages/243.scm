@@ -91,7 +91,15 @@
 (define (angle z) (apply-generic 'angle z))
 
 (define (make-from-real-imag x y)
-  ((get 'make-from-real-imag 'rectangular) x y))
+  (define (dispatch op)
+    (cond ((eq? op 'real-part) x)
+          ((eq? op 'imag-part) y)
+          ((eq? op 'magnitude)
+           (sqrt (+ (sqr x) (sqr y))))
+          ((eq? op 'angle) (atan y x))
+          (else
+           (error "Unknown op -- MAKE-FROM-REAL-IMAG" op))))
+  dispatch)
 
 (define (make-from-mag-ang r a)
   ((get 'make-from-mag-ang 'polar) r a))
