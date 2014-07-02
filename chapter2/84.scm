@@ -3,7 +3,7 @@
 (define (put op type item)
   (hash-set! table1 (list op type) item))
 (define (get op type)
-  (hash-ref table1 (list op type)))
+  (hash-ref table1 (list op type) false))
 
 (define table2 (make-hash))
 (define (put-coercion op type element)
@@ -14,16 +14,14 @@
 (provide =zero?
          make-complex-from-real-imag
          make-complex-from-mag-ang
-         make-scheme-number
+         make-integer
          make-rational)
 
 (define (attach-tag type-tag contents)
-  (if (number? contents)
-      contents
-      (cons type-tag contents)))
+  (cons type-tag contents))
 
 (define (type-tag datum)
-  (cond ((number? datum) 'scheme-number)
+  (cond ((number? datum) 'integer)
         ((pair? datum) (car datum))
         (else
          (error "Bad tagged datum -- TYPE-TAG" datum))))
@@ -35,43 +33,83 @@
          (error "Bad tagged datum -- CONTENTS" datum))))
 
 
-(define (coerce-to target-type remaining-args result)
-  (if (null? remaining-args)
-      result
-      (let* ((arg (car remaining-args))
-             (original-type (type-tag arg)))
-        (if (eq? target-type original-type)
-            (coerce-to target-type 
-                       (cdr remaining-args)
-                       (append result (list arg)))
-            (let ((original->target (get-coercion original-type target-type)))
-              (if original->target
-                  (coerce-to target-type
-                             (cdr remaining-args)
-                             (append result (list (original->target arg))))
-                  #f))))))
-
 (define (apply-generic op . args)
+  ;; Here's what was mentioned in having a more correct approach, to dealing with
+  ;; apply-generic, than the naive implementation that the book recommended in 2.82:
+  ;;
+  ;; "Here we're trying to generalize apply-generic to handle any number of types. 
+  ;; The trouble here will be that we do not have any previously saved data on the
+  ;; types we're dealing with, regarding whether or not one is a sub-type or
+  ;; super-type of the other. This would make things much easier and result in a
+  ;; faster run-time after all the type relations were loaded once."
+  ;;
+  ;; It turns out that we now do indeed have a way to have saved data on the relation
+  ;; between any types in these packages. We will be using our data-directed table
+  ;; like so:
+  ;;                                    OPERATIONS
+  ;;
+  ;;                     'raise                       'level
+  ;;                + --------------------------------------------
+  ;;                | (define raise             |
+  ;;       integer  |   (lambda (x)             |       1           ...   
+  ;;                |      (cons 'rational      |
+  ;;                |            (cons x 1))))  |
+  ;;                 ---------------------------------------------
+  ;;       rational | (define raise             |
+  ;;                |   (lambda (x)             |       2           ...
+  ;;                |      ( . . .)))           |
+  ;; TYPES           ---------------------------------------------
+  ;;       real     | (define raise             |
+  ;;                |   (lambda (x)             |       3           ...
+  ;;                |      ( . . .)))           |
+  ;;                 ---------------------------------------------
+  ;;       complex  | (define raise             |
+  ;;                |   (lambda (x)             |       4           ...
+  ;;                |      ( . . .)))           |
+  ;;                + --------------------------------------------
+  ;;
+  ;; We'll search for the argument that holds the type with the highest level,
+  ;; from our table, in the list of arguments and convert the other arguments
+  ;; to have this same type by using our raise procedure from exercise 2.83!
+  
+  (define (find-highest-type tags)
+    ;; Find the highest level in our table, out of all the arguments provided.
+    (if (null? tags) 
+        0
+        (max (get 'level (car tags))
+             (find-highest-type (cdr tags)))))
+  
+  (define (coerce-to target-level remaining-args result)
+    ;; Our coerce-to internal procedure here is altered slightly from 2.82 in
+    ;; that as it first argumet it takes a target level which all arguments
+    ;; should match. Not so coincidentally, each argument will now be coerced
+    ;; as well!
+    (cond ((null? remaining-args) result)
+          ((> target-level (get 'level 
+                                (type-tag (car remaining-args))))
+           (coerce-to target-level 
+                      (append (list (raise (car remaining-args)))
+                              (cdr remaining-args))
+                      result))
+          (else
+           (coerce-to target-level 
+                      (cdr remaining-args) 
+                      (append result 
+                              (list (car remaining-args)))))))
+        
+    
   (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
       (if proc
-          (apply proc (map contents args))
-          (if (= (length args) 2)
-              (let ((type1 (car type-tags))
-                    (type2 (cadr type-tags))
-                    (a1 (car args))
-                    (a2 (cadr args)))
-                (let ((t1->t2 (get-coercion type1 type2))
-                      (t2->t1 (get-coercion type2 type1)))
-                  (cond (t1->t2
-                         (apply-generic op (t1->t2 a1) a2))
-                        (t2->t1
-                         (apply-generic op (t2->t1 a2)))
-                        (else
-                         (error "No method for these types"
-                                (list op type-tags))))))
-              (error "No method for these types"
-                     (list op type-tags)))))))
+           (apply proc (map contents args))
+           (let* ((target-level (find-highest-type type-tags))
+                  (coerced-args (coerce-to target-level args '()))
+                  (coerced-tags (map type-tag coerced-args))
+                  (coerced-proc (get op coerced-tags)))
+             (apply coerced-proc (map contents coerced-args)))))))
+             
+             
+
 
 (define (square x) (* x x))
 
@@ -84,28 +122,33 @@
 
 ;;; ordinary numbers ===========================================================
 
-(define (install-scheme-number-package)
-  (define (tag x) (attach-tag 'scheme-number x))
-  (put 'add '(scheme-number scheme-number) 
+(define (install-integer-package)
+  (define (tag x) (attach-tag 'integer x))
+  (put 'add '(integer integer) 
        (lambda (x y) (tag (+ x y))))
-  (put 'sub '(scheme-number scheme-number) 
+  (put 'sub '(integer integer) 
        (lambda (x y) (tag (- x y))))
-  (put 'mul '(scheme-number scheme-number) 
+  (put 'mul '(integer integer) 
        (lambda (x y) (tag (* x y))))
-  (put 'div '(scheme-number scheme-number) 
+  (put 'div '(integer integer) 
        (lambda (x y) (tag (/ x y))))
-  (put 'make 'scheme-number
-       (lambda (x) (tag x)))
-  (put 'equ? '(scheme-number scheme-number)
+  (put 'equ? '(integer integer)
        (lambda (x y) (equal? x y)))
-  (put '=zero? '(scheme-number)
+  (put '=zero? '(integer)
        (lambda (x)
          (= 0 x)))
+  (put 'make 'integer
+       (lambda (x) (tag x)))
+  (put 'raise '(integer)
+       (lambda (x) (cons 'rational 
+                         (cons x 1))))
+  (put 'level 'integer
+       1)
        
-  "Scheme number package installed!")
+  "Integer number package installed!")
 
-(define (make-scheme-number n)
-  ((get 'make 'scheme-number) n))
+(define (make-integer n)
+  ((get 'make 'integer) n))
 ;;; rational numbers ===========================================================
 
 (define (install-rational-package)
@@ -146,12 +189,45 @@
                           (equal? (denom x) (denom y)))))
   (put '=zero? '(rational)
        (lambda (x) (= (numer x) 0)))
+  (put 'raise '(rational)
+       (lambda (x) (cons 'real (exact->inexact (/ (numer x) (denom x))))))
+  (put 'level 'rational
+       2)
+  
   "Rational number package installed!")
 
 (define (make-rational n d)
   ((get 'make 'rational) n d))
+;;; real numbers ===============================================================
 
-;;; rect package ==============================================================
+(define (install-real-package)
+  (define (tag x) (attach-tag 'real x))
+  (put 'add '(real real) 
+       (lambda (x y) (tag (+ x y))))
+  (put 'sub '(real real) 
+       (lambda (x y) (tag (- x y))))
+  (put 'mul '(real real) 
+       (lambda (x y) (tag (* x y))))
+  (put 'div '(real real) 
+       (lambda (x y) (tag (/ x y))))
+  (put 'equ? '(real real)
+       (lambda (x y) (equal? x y)))
+  (put '=zero? '(real)
+       (lambda (x)
+         (= 0 x)))
+  (put 'make 'real
+       (lambda (x) (tag x)))
+  (put 'raise '(real)
+       (lambda (x) (cons 'rectangular 
+                         (cons x 0))))
+  (put 'level 'real
+       3)
+       
+  "Real number package installed!")
+(define (make-real n)
+  ((get 'make 'real) n))
+
+;;; rect package ===============================================================
 (define (install-rectangular-package)
   ;; internal procedures
   (define (real-part z) (car z))
@@ -237,7 +313,7 @@
   
   ;; interface to rest of the system
   (define (tag z) (attach-tag 'complex z))
-  (put 'add '(complex scheme-number)
+  (put 'add '(complex integer)
      (lambda (z x) (tag (add-complex-to-schemenum z x))))
   (put 'add '(complex complex)
        (lambda (z1 z2) (tag (add-complex z1 z2))))
@@ -262,6 +338,9 @@
   (put '=zero? '(complex)
        (lambda (x) (and (= (real-part x) 0)
                         (= (imag-part x) 0))))
+  (put 'level 'complex
+       4)
+  
   "Complex number package installed!")
 
 
@@ -281,19 +360,21 @@
 (define (angle z)
   (apply-generic 'angle z))
 
-(define (scheme-number->complex n)
+(define (integer->complex n)
   (make-complex-from-real-imag (contents n) 0))
 
-(put-coercion 'scheme-number 'complex scheme-number->complex)
+(put-coercion 'integer 'complex integer->complex)
 
 ;;; general generic procedures =================================================
 (define (equ? num1 num2)
   (apply-generic 'equ? num1 num2))
 (define (=zero? x)
   (apply-generic '=zero? x))
-
+(define (raise type)
+  (apply-generic 'raise type))
 ;;; load up the packages =======================================================
-(install-scheme-number-package)
+(install-real-package)
+(install-integer-package)
 (install-rational-package)
 (install-polar-package)
 (install-rectangular-package)

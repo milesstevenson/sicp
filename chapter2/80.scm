@@ -1,4 +1,5 @@
 #lang racket
+
 (provide =zero?
          make-complex-from-real-imag
          make-complex-from-mag-ang
@@ -21,7 +22,6 @@
         ((number? datum) datum)
         (else
          (error "Bad tagged datum -- CONTENTS" datum))))
-
 
 (define (apply-generic op . args)
   (let ((type-tags (map type-tag args)))
