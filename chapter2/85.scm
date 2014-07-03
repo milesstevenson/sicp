@@ -33,6 +33,22 @@
          (error "Bad tagged datum -- CONTENTS" datum))))
 
 
+;;; BUGS HERE ==================================================================
+;;; fix after work
+(define (drop object)
+  (let ((projected-obj (project object)))
+    (let ((raised-obj (raise projected-obj)))
+      (if (equal? (type-tag object) 'real)
+          (let ((re-raised-obj (raise raised-obj)))
+            (if (equ? re-raised-obj object)
+                (drop projected-obj)
+                object))
+          (if (equ? raised-obj object)
+              (drop projected-obj)
+              object)))))
+;;; ^^^ ========================================================================
+;;; BUGS HERE ==================================================================
+
 (define (apply-generic op . args)
   ;; Here's what was mentioned in having a more correct approach, to dealing with
   ;; apply-generic, than the naive implementation that the book recommended in 2.82:
@@ -96,8 +112,6 @@
                       (cdr remaining-args) 
                       (append result 
                               (list (car remaining-args)))))))
-        
-    
   (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
       (if proc
@@ -144,6 +158,9 @@
                          (cons x 1))))
   (put 'level 'integer
        1)
+  (put 'project '(integer)
+       (lambda (x)
+         (make-integer x)))
        
   "Integer number package installed!")
 
@@ -193,6 +210,8 @@
        (lambda (x) (cons 'real (exact->inexact (/ (numer x) (denom x))))))
   (put 'level 'rational
        2)
+  (put 'project '(rational)
+       (lambda (x) (cons 'integer (numer x))))
   
   "Rational number package installed!")
 
@@ -218,11 +237,12 @@
   (put 'make 'real
        (lambda (x) (tag x)))
   (put 'raise '(real)
-       (lambda (x) (cons 'complex
-                         (cons 'rectangular 
-                               (cons x 0)))))
+       (lambda (x) (make-complex-from-real-imag x 0)))
   (put 'level 'real
        3)
+  (put 'project '(real)
+       (lambda (x)
+         (cons 'integer (round x))))
        
   "Real number package installed!")
 (define (make-real n)
@@ -233,7 +253,7 @@
   ;; internal procedures
   (define (real-part z) (car z))
   (define (imag-part z) (cdr z))
-  (define (make-from-real-imag x y) (cons x y))
+  (define (make-from-real-imag x y) (cons (exact->inexact x) y))
   (define (magnitude z)
     (sqrt (+ (square (real-part z)) (square (imag-part z)))))
   (define (angle z)
@@ -341,6 +361,10 @@
                         (= (imag-part x) 0))))
   (put 'level 'complex
        4)
+  (put 'project '(complex)
+       (lambda (x) 
+         (cons 'real (exact->inexact (real-part x)))))
+                         
   
   "Complex number package installed!")
 
@@ -363,7 +387,6 @@
 
 (define (integer->complex n)
   (make-complex-from-real-imag (contents n) 0))
-
 (put-coercion 'integer 'complex integer->complex)
 
 ;;; general generic procedures =================================================
@@ -371,8 +394,10 @@
   (apply-generic 'equ? num1 num2))
 (define (=zero? x)
   (apply-generic '=zero? x))
-(define (raise type)
-  (apply-generic 'raise type))
+(define (raise object)
+  (apply-generic 'raise object))
+(define (project object)
+  (apply-generic 'project object))
 ;;; load up the packages =======================================================
 (install-real-package)
 (install-integer-package)
