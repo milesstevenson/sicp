@@ -36,18 +36,20 @@
 ;;; BUGS HERE ==================================================================
 ;;; fix after work
 (define (drop object)
-  (let ((projected-obj (project object)))
-    (let ((raised-obj (raise projected-obj)))
-      (if (equal? (type-tag object) 'real)
-          (let ((re-raised-obj (raise raised-obj)))
-            (if (equ? re-raised-obj object)
-                (drop projected-obj)
-                object))
-          (if (equ? raised-obj object)
-              (drop projected-obj)
-              object)))))
+  (if (equal? (type-tag object) 'integer)
+      object
+      (let ((projected-obj (project object)))
+        (let ((raised-obj (raise projected-obj)))
+          (if (equal? (type-tag object) 'real)
+              (let ((re-raised-obj (raise raised-obj)))
+                (if (equ? re-raised-obj object)
+                    (drop projected-obj)
+                    object))
+              (if (equ? raised-obj object)
+                  (drop projected-obj)
+                  object))))))
 ;;; ^^^ ========================================================================
-;;; BUGS HERE ==================================================================
+;;; BUGS HERE ===================================================================
 
 (define (apply-generic op . args)
   ;; Here's what was mentioned in having a more correct approach, to dealing with
@@ -100,7 +102,7 @@
     ;; that as it first argumet it takes a target level which all arguments
     ;; should match. Not so coincidentally, each argument will now be coerced
     ;; as well!
-    (cond ((null? remaining-args) result)
+    (cond ((null? remaining-args) drop result)
           ((> target-level (get 'level 
                                 (type-tag (car remaining-args))))
            (coerce-to target-level 
@@ -120,7 +122,7 @@
                   (coerced-args (coerce-to target-level args '()))
                   (coerced-tags (map type-tag coerced-args))
                   (coerced-proc (get op coerced-tags)))
-             (apply coerced-proc (map contents coerced-args)))))))
+             (drop (apply coerced-proc (map contents coerced-args))))))))
              
              
 
@@ -334,8 +336,6 @@
   
   ;; interface to rest of the system
   (define (tag z) (attach-tag 'complex z))
-  (put 'add '(complex integer)
-     (lambda (z x) (tag (add-complex-to-schemenum z x))))
   (put 'add '(complex complex)
        (lambda (z1 z2) (tag (add-complex z1 z2))))
   (put 'sub '(complex complex)
@@ -385,9 +385,9 @@
 (define (angle z)
   (apply-generic 'angle z))
 
-(define (integer->complex n)
-  (make-complex-from-real-imag (contents n) 0))
-(put-coercion 'integer 'complex integer->complex)
+;(define (integer->complex n)
+;  (make-complex-from-real-imag (contents n) 0))
+;(put-coercion 'integer 'complex integer->complex)
 
 ;;; general generic procedures =================================================
 (define (equ? num1 num2)
