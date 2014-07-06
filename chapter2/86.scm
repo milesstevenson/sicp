@@ -1,4 +1,19 @@
 #lang racket
+(provide (all-defined-out))
+;;; If complex numbers are to be handled with magnitude, angle, real, and 
+;;; imaginary parts where all can be integers or rational numbers now, there needs to
+;;; be the following generic procedures added in every class of numbers:
+;;;
+;;; SQUARE, for magnitude of rectangular complex number
+;;; COSINE, for real-part of polar complex numbers
+;;; SINE, for imag-part of polar complex numbers
+;;; ARCTAN, for angle of rectangular complex numbers
+;;; SQUARE-ROOT, for magnitude of rectangular complex numbers
+;;;
+;;; Because of these new representations for complex numbers, changes also needed
+;;; to be made to how the system projects a number. The drop procedure did not need
+;;; changes, though.
+
 (define table1 (make-hash))
 (define (put op type item)
   (hash-set! table1 (list op type) item))
@@ -11,11 +26,6 @@
 (define (get-coercion op type)
   (dict-ref table2 (list op type) false))
 ;;; ============================================================================
-(provide =zero?
-         make-complex-from-real-imag
-         make-complex-from-mag-ang
-         make-integer
-         make-rational)
 
 (define (attach-tag type-tag contents)
   (cons type-tag contents))
@@ -32,6 +42,14 @@
         (else
          (error "Bad tagged datum -- CONTENTS" datum))))
 
+(define (generic-number? object)
+  (let ((tag (type-tag object)))
+    (if (or (equal? tag 'integer)
+            (equal? tag 'rational)
+            (equal? tag 'real)
+            (equal? tag 'complex))
+        true
+        false)))
 
 (define (drop object)
   (if (equal? (type-tag object) 'integer)
@@ -119,11 +137,7 @@
                   (coerced-tags (map type-tag coerced-args))
                   (coerced-proc (get op coerced-tags)))
              (drop (apply coerced-proc (map contents coerced-args))))))))
-             
-             
-
-
-(define (square x) (* x x))
+            
 
 ;;; generic arithmetic =========================================================
 
@@ -131,8 +145,13 @@
 (define (sub x y) (apply-generic 'sub x y))
 (define (mul x y) (apply-generic 'mul x y))
 (define (div x y) (apply-generic 'div x y))
+(define (square x) (apply-generic 'square x))
+(define (cosine x) (apply-generic 'cosine x))
+(define (sine x) (apply-generic 'sine x))
+(define (arctan y x) (apply-generic 'arctan y x))
+(define (square-root x) (apply-generic 'square-root x))
 
-;;; ordinary numbers ===========================================================
+;;; integer numbers ===========================================================
 
 (define (install-integer-package)
   (define (tag x) (attach-tag 'integer x))
@@ -144,6 +163,16 @@
        (lambda (x y) (tag (* x y))))
   (put 'div '(integer integer) 
        (lambda (x y) (tag (/ x y))))
+  (put 'square '(integer)
+       (lambda (x) (tag (* x x))))
+  (put 'square-root '(integer)
+       (lambda (x) (attach-tag 'real (sqrt x))))
+  (put 'cosine '(integer)
+       (lambda (x) (attach-tag 'real (cos x))))
+  (put 'sine '(integer)
+       (lambda (x) (attach-tag 'real (sin x))))
+  (put 'arctan '(integer integer)
+       (lambda (y x) (attach-tag 'real (atan y x))))
   (put 'equ? '(integer integer)
        (lambda (x y) (equal? x y)))
   (put '=zero? '(integer)
@@ -197,6 +226,17 @@
        (lambda (x y) (tag (mul-rat x y))))
   (put 'div '(rational rational)
        (lambda (x y) (tag (div-rat x y))))
+  (put 'square '(rational)
+       (lambda (x) (tag (mul-rat x x))))
+  (put 'square-root '(rational)
+       (lambda (x) (cons 'real (exact->inexact (sqrt (/ (numer x) (denom x)))))))
+  (put 'cosine '(rational)
+       (lambda (x) (cons 'real (cos (exact->inexact (/ (numer x) (denom x)))))))
+  (put 'sine '(rational)
+       (lambda (x) (cons 'real (sin (exact->inexact (/ (numer x) (denom x)))))))
+  (put 'arctan '(rational rational)
+       (lambda (y x) (cons 'real (atan (exact->inexact (/ (numer y) (denom y))) 
+                                       (exact->inexact (/ (numer x) (denom x)))))))  
   (put 'make 'rational
        (lambda (n d) (tag (make-rat n d))))
   (put 'equ? '(rational rational)
@@ -227,13 +267,23 @@
        (lambda (x y) (tag (* x y))))
   (put 'div '(real real) 
        (lambda (x y) (tag (/ x y))))
+  (put 'square '(real)
+       (lambda (x) (tag (* x x))))
+  (put 'square-root '(real)
+       (lambda (x) (tag (sqrt x))))
+  (put 'cosine '(real)
+       (lambda (x) (tag (cos x))))
+  (put 'sine '(real)
+       (lambda (x) (tag (sin x))))
+  (put 'arctan '(real real)
+       (lambda (y x) (tag (atan y x))))
   (put 'equ? '(real real)
        (lambda (x y) (equal? x y)))
   (put '=zero? '(real)
        (lambda (x)
          (= 0 x)))
   (put 'make 'real
-       (lambda (x) (tag x)))
+       (lambda (x) (tag (exact->inexact x))))
   (put 'raise '(real)
        (lambda (x) (make-complex-from-real-imag x 0)))
   (put 'level 'real
@@ -251,13 +301,14 @@
   ;; internal procedures
   (define (real-part z) (car z))
   (define (imag-part z) (cdr z))
-  (define (make-from-real-imag x y) (cons (exact->inexact x) y))
+  
+  (define (make-from-real-imag x y) (cons x y))
   (define (magnitude z)
-    (sqrt (+ (square (real-part z)) (square (imag-part z)))))
+    (square-root (add (square (real-part z)) (square (imag-part z)))))
   (define (angle z)
-    (atan (imag-part z) (real-part z)))
+    (arctan (imag-part z) (real-part z)))
   (define (make-from-mag-ang r a)
-    (cons (* r (cos a)) (* r (sin a))))
+    (cons (mul r (cosine a)) (mul r (sine a))))
   
   ;; interface to the rest of the system
   (define (tag x) (attach-tag 'rectangular x))
@@ -278,12 +329,12 @@
   (define (angle z) (cdr z))
   (define (make-from-mag-ang r a) (cons r a))
   (define (real-part z)
-    (* (magnitude z) (cos (angle z))))
+    (mul (magnitude z) (cosine (angle z))))
   (define (imag-part z)
-    (* (magnitude z) (sin (angle z))))
+    (mul (magnitude z) (sine (angle z))))
   (define (make-from-real-imag x y)
-    (cons (sqrt (+ (square x) (square y)))
-          (atan y x)))
+    (cons (square-root (add (square x) (square y)))
+          (arctan y x)))
   
   ;; interface to the rest of system
   (define (tag x) (attach-tag 'polar x))
@@ -315,20 +366,17 @@
     (apply-generic 'imag-part z))
   
   (define (add-complex z1 z2)
-    (make-from-real-imag (+ (real-part z1) (real-part z2))
-                         (+ (imag-part z1) (imag-part z2))))
+    (make-from-real-imag (add (real-part z1) (real-part z2))
+                         (add (imag-part z1) (imag-part z2))))
   (define (sub-complex z1 z2)
-    (make-from-real-imag (- (real-part z1) (real-part z2))
-                         (- (imag-part z1) (imag-part z2))))
+    (make-from-real-imag (sub (real-part z1) (real-part z2))
+                         (sub (imag-part z1) (imag-part z2))))
   (define (mul-complex z1 z2)
-    (make-from-mag-ang (* (magnitude z1) (magnitude z2))
-                       (+ (angle z1) (angle z2))))
+    (make-from-mag-ang (mul (magnitude z1) (magnitude z2))
+                       (add (angle z1) (angle z2))))
   (define (div-complex z1 z2)
-    (make-from-mag-ang (/ (magnitude z1) (magnitude z2))
-                       (- (angle z1) (angle z2))))
-  (define (add-complex-to-schemenum z x)
-    (make-from-real-imag (+ (real-part z) x)
-                         (imag-part z)))
+    (make-from-mag-ang (div (magnitude z1) (magnitude z2))
+                       (sub (angle z1) (angle z2))))
   
   ;; interface to rest of the system
   (define (tag z) (attach-tag 'complex z))
@@ -374,16 +422,12 @@
 ;;; generic procedures for complex ==============================
 (define (real-part z)
   (apply-generic 'real-part z))
-(define (imag-partt z)
-  (apply-generic 'imag-partt z))
+(define (imag-part z)
+  (apply-generic 'imag-part z))
 (define (magnitude z)
   (apply-generic 'magnitude z))
 (define (angle z)
   (apply-generic 'angle z))
-
-;(define (integer->complex n)
-;  (make-complex-from-real-imag (contents n) 0))
-;(put-coercion 'integer 'complex integer->complex)
 
 ;;; general generic procedures =================================================
 (define (equ? num1 num2)
@@ -395,6 +439,7 @@
 (define (project object)
   (apply-generic 'project object))
 ;;; load up the packages =======================================================
+
 (install-real-package)
 (install-integer-package)
 (install-rational-package)
