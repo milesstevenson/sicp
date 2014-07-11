@@ -401,8 +401,8 @@
        (lambda (x y) (and (equal? (magnitude x) (magnitude y))
                           (equal? (angle x) (angle y)))))
   (put '=zero? '(complex)
-       (lambda (x) (and (= (real-part x) 0)
-                        (= (imag-part x) 0))))
+       (lambda (x) (and (=zero? (real-part x))
+                        (=zero? (imag-part x)))))
   (put 'level 'complex
        4)
   (put 'project '(complex)
@@ -455,6 +455,11 @@
   (define (make-term order coeff) (list order coeff))
   (define (order term) (car term))
   (define (coeff term) (cadr term))
+  (define (=poly-zero? terms)
+    (cond ((null? terms) #t)
+          ((=zero? (coeff (first-term terms)))
+           (=poly-zero? (rest-terms terms)))
+          (else #f)))
   
   (define (add-terms L1 L2)
     (cond ((empty-termlist? L1) L2)
@@ -509,7 +514,8 @@
   (put 'make 'polynomial
        (lambda (var terms) (tag (make-poly var terms))))
   (put '=zero? '(polynomial)
-       (lambda (p) (empty-termlist? (term-list p))))
+       (lambda (p) (or (empty-termlist? (term-list p))
+                       (=poly-zero? (term-list p)))))
   "Polynomial package installed!")
 (define (make-polynomial var terms)
   ((get 'make 'polynomial) var terms))
