@@ -1,18 +1,5 @@
 #lang racket
 (provide (all-defined-out))
-;;; If complex numbers are to be handled with magnitude, angle, real, and 
-;;; imaginary parts where all can be integers or rational numbers now, there needs to
-;;; be the following generic procedures added in every class of numbers:
-;;;
-;;; SQUARE, for magnitude of rectangular complex number
-;;; COSINE, for real-part of polar complex numbers
-;;; SINE, for imag-part of polar complex numbers
-;;; ARCTAN, for angle of rectangular complex numbers
-;;; SQUARE-ROOT, for magnitude of rectangular complex numbers
-;;;
-;;; Because of these new representations for complex numbers, changes also needed
-;;; to be made to how the system projects a number. The drop procedure did not need
-;;; changes, though.
 
 (define table1 (make-hash))
 (define (put op type item)
@@ -140,6 +127,20 @@
             
 
 ;;; generic arithmetic =========================================================
+;;;
+;;; If complex numbers are to be handled with magnitude, angle, real, and 
+;;; imaginary parts where all can be integers or rational numbers now, there needs to
+;;; be the following generic procedures added in every class of numbers:
+;;;
+;;; SQUARE, for magnitude of rectangular complex number
+;;; COSINE, for real-part of polar complex numbers
+;;; SINE, for imag-part of polar complex numbers
+;;; ARCTAN, for angle of rectangular complex numbers
+;;; SQUARE-ROOT, for magnitude of rectangular complex numbers
+;;;
+;;; Because of these new representations for complex numbers, changes also needed
+;;; to be made to how the system projects a number. The drop procedure did not need
+;;; changes, though.
 
 (define (add x y) (apply-generic 'add x y))
 (define (sub x y) (apply-generic 'sub x y))
@@ -448,6 +449,57 @@
 (define (angle z)
   (apply-generic 'angle z))
 
+
+;;; dense polynomials ================================================================
+(define (install-dense-polynomial-package)
+  ;; internal procedures
+  ;; representation of poly
+  (define (make-poly variable term-list)
+    (cons variable term-list))
+  (define (variable p) (car p))
+  (define (term-list p) (cdr p))
+  
+  (define (variable? x) (symbol? x))
+  (define (same-variable? v1 v2)
+    (and (variable? v1) (variable? v2) (eq? v1 v2)))
+  
+  ;; representation of terms and term lists
+  (define (adjoin-term term term-list)
+    (if (generic-number? term)
+        (cons term term-list)
+        term-list))
+  (define (the-empty-termlist) '())
+  (define (first-term term-list) (car term-list))
+  (define (rest-terms term-list) (cdr term-list))
+  (define (empty-termlist? term-list) (null? term-list))
+  (define (make-term coeff) coeff)
+  (define (order term-list)
+    (- (length term-list) 1))
+  (define (coeff term) term)
+  (define (=poly-zero? term-list)
+    (cond ((empty-termlist? term-list) #t)
+          ((=zero? (coeff (first-term term-list)))
+           (=poly-zero? (rest-terms term-list)))
+          (else #f)))
+  (define (poly-negate term-list)
+    (if (empty-termlist? term-list)
+        (the-empty-termlist)
+        (cons (negate (first-term term-list))
+              (poly-negate (rest-terms term-list)))))
+  
+  ;; interface to the rest of the system
+  (define (tag p) (attach-tag 'dense p))
+  (put 'make 'dense
+       (lambda (var terms) (tag (make-poly var terms))))
+  (put '=zero? '(dense)
+       (lambda (p) (or (empty-termlist? (term-list p))
+                            (=poly-zero? (term-list p)))))
+  (put 'negate '(dense)
+       (lambda (p) (tag (make-poly (variable p) (poly-negate (term-list p))))))
+  "Dense Poly Package Installed!")
+(define (make-dense-polynomial var terms)
+  ((get 'make 'dense) var terms))
+
 ;;; Polynomials ================================================================
 (define (install-polynomial-package)
   ;; internal procedures
@@ -529,7 +581,6 @@
                              (term-list p2)))
         (error "Polys not in same var -- MUL-POLY"
                (list p1 p2))))
-  
   (define (sub-poly p1 p2)
       (add-poly p1 (make-poly (variable p2) (poly-negate (term-list p2)))))
   ;; <procedures used by mul-poly>
@@ -570,4 +621,5 @@
 (install-polar-package)
 (install-rectangular-package)
 (install-complex-package)
+(install-dense-polynomial-package)
 (install-polynomial-package)
