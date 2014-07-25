@@ -9,10 +9,6 @@
 ;;; deal with every type of number. I think to save time, and possibly hairs in
 ;;; my head, I'll stick to this simple implementation.
 ;;;
-;;; The first objective here is to adjust our symbolic algebra system so that
-;;; polynomials and numbers can interact with one another. After that, we need
-;;; a way in which polynomials of different variables can have add and mul done
-;;; on one another.
 (provide (all-defined-out))
 
 (define table1 (make-hash))
