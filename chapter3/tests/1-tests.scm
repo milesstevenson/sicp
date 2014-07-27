@@ -4,6 +4,7 @@
 
 (define A (make-accumulator 5))
 
+
 (define sicp-3.01-tests
   (test-suite
    "Tests for SICP exercise 3.01"

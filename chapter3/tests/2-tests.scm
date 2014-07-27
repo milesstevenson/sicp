@@ -5,6 +5,7 @@
 (define s (make-monitored sqrt))
 (define t (make-monitored (lambda (x) (* x x))))
 
+
 (define sicp-3.02-tests
   (test-suite
    "Tests for SICP exercise 3.02"
