@@ -17,3 +17,9 @@
 ;;; If we allow the inverter-delay to be 2 and the and-gate-delay to be 3
 ;;; we have 2 + 2 + 3 = 7 as the or-gate-delay. Although there are 3 inverters
 ;;; used, two of them run in parallel.
+(define a (make-wire))
+(define b (make-wire))
+(define out (make-wire))
+(probe 'output out)
+(or-gate-29 a b out)
+(propagate)
