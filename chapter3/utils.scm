@@ -195,6 +195,21 @@
       1
       0))
   
+(define (logical-or x y)
+  (if (and (= x 0) (= y 0))
+      0
+      1))
+;;; Or-Gate ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (or-gate a1 a2 output)
+  (define (or-action-procedure)
+    (let ((new-value
+          (logical-or (get-signal a1) (get-signal a2))))
+      (after-delay or-gate-delay
+                   (lambda ()
+                     (set-signal! output new-value)))))
+  (add-action! a1 or-action-procedure)
+  (add-action! a2 or-action-procedure)
+  'done)
 ;;; Inverter ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; need to implement and gate and or gate and inverter
 (define (inverter input output)
@@ -211,13 +226,13 @@
         (else (error "Invalid signal" s))))
 
 ;;; Half-Adder ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;(define (half-adder a b s c)
-;  (let ((d (make-wire)) (e (make-wire)))
-;    (or-gate a b d)
-;    (and-gate a b c)
-;    (inverter c e)
-;    (and-gate d e s)
-;    'ok))
+(define (half-adder a b s c)
+  (let ((d (make-wire)) (e (make-wire)))
+    (or-gate a b d)
+    (and-gate a b c)
+    (inverter c e)
+    (and-gate d e s)
+    'ok))
 ;;; Sample Simulation ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (probe name wire)
   (add-action! wire

@@ -1,15 +1,19 @@
 #lang racket
-;;; The delay time of this or-gate is the delay time of 3 and-gate-delays and 3 
-;;; or-gate-delays
-
+;;; Through DeMorgan's Law, we can see that (OR A B) is equivalent to 
+;;; (NOT (NOT (OR A B))
+;;; (NOT (AND (NOT A) (NOT B))
 (require r5rs/init)
-(define (or-gate a1 a2 output)
-  (define (or-action-procedure)
-    (let* ((b1 (logical-not (get-signal (and-gate a1 a1))))
-           (b2 (logical-not (get-signal (and-gate a2 a2))))
-           (new-value (logical-not (get-signal (and-gate b1 b2)))))
-      (after-delay or-gate-delay
-                   (lambda ()
-                     (set-signal! output new-value)))))
-  (add-action! a1 or-action-procedure)
-  (add-action! a2 or-action-procedure))
+(require "utils.scm")
+(define (or-gate-29 a b output)
+  (let ((c (make-wire))
+        (d (make-wire))
+        (e (make-wire)))
+    (inverter a c)
+    (inverter b d)
+    (and-gate c d e)
+    (inverter e output))
+  'ok)
+    
+;;; If we allow the inverter-delay to be 2 and the and-gate-delay to be 3
+;;; we have 2 + 2 + 3 = 7 as the or-gate-delay. Although there are 3 inverters
+;;; used, two of them run in parallel.
