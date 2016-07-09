@@ -5,7 +5,6 @@
 #.*
 .#*
 chapter2/57.2
-*.rkt
 *.dep
 *.zo
 chapter2/compiled/drracket/errortrace/tmp14032901181403290118740
