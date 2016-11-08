@@ -258,4 +258,17 @@
 (define inverter-delay 2)
 (define and-gate-delay 3)
 (define or-gate-delay 5)
-;;; TODO
+
+
+;;; 3.3.5 Propagation of Constraints;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (make-connector)
+  ;; A connector is represented as a procedural object with local state variables
+  ;; 'value', the current value of the connector; 'informant', the object that set
+  ;; the connector's value; and 'constraints', a list of constraints in which the
+  ;; connector participates.
+  (let ((value false) (informant false) (constraints '()))
+    (define (set-my-value newval setter)
+      (cond ((not (has-value?) me))
+            ; TODO finish adding utility functions
+            ))
+    ))
