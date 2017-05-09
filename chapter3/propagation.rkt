@@ -52,7 +52,7 @@
              (set! value newval)
              (set! informant setter)
              (for-each-except setter
-                              inform-about-no-value
+                              inform-about-value
                               constraints))
             ((not (= value newval))
              (error "Contradiction" (list value newval)))
@@ -88,7 +88,8 @@
     (display "Probe: ")
     (display name)
     (display " = ")
-    (display value))
+    (display value)
+    (newline))
   (define (process-new-value)
     (print-probe (get-value connector)))
   (define (process-forget-value)
